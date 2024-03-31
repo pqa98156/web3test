@@ -1,0 +1,46 @@
+const Web3 = require('web3');
+const { abi, bytecode } = require('./ProxyContract.json'); // 从编译后的合约中导入 ABI 和字节码
+
+const web3 = new Web3('https://mainnet.infura.io/v3/your_infura_project_id');
+
+const contract = new web3.eth.Contract(abi);
+
+// 部署合约
+async function deployContract() {
+    const accounts = await web3.eth.getAccounts();
+    const deploy = contract.deploy({ data: bytecode });
+    const instance = await deploy.send({ from: accounts[0], gas: 3000000 });
+    console.log('Contract deployed at:', instance.options.address);
+}
+
+// 设置代理目标地址
+async function setProxyTarget(contractAddress, targetAddress) {
+    const instance = new web3.eth.Contract(abi, contractAddress);
+    const accounts = await web3.eth.getAccounts();
+    await instance.methods.setProxyTarget(targetAddress).send({ from: accounts[0] });
+    console.log('Proxy target address set to:', targetAddress);
+}
+
+// 转发以太币到目标地址
+async function forwardEther(contractAddress, amount) {
+    const instance = new web3.eth.Contract(abi, contractAddress);
+    const accounts = await web3.eth.getAccounts();
+    const tx = await instance.methods.forwardEther().send({ from: accounts[0], value: amount });
+    console.log('Ether forwarded, transaction hash:', tx.transactionHash);
+}
+
+// 部署合约、设置代理目标地址、转发以太币的示例
+async function main() {
+    // 部署合约
+    const contractAddress = await deployContract();
+
+    // 设置代理目标地址
+    const targetAddress = '0xRecipientAddress';
+    await setProxyTarget(contractAddress, targetAddress);
+
+    // 转发以太币到目标地址
+    const amountToSend = web3.utils.toWei('1', 'ether');
+    await forwardEther(contractAddress, amountToSend);
+}
+
+main().catch(console.error);
