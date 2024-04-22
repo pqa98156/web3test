@@ -1,0 +1,29 @@
+import org.web3j.crypto.Credentials;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.utils.Numeric;
+
+import java.math.BigInteger;
+
+public class EtcNFTMinting {
+
+    public static void main(String[] args) throws Exception {
+        // 连接到以太坊经典网络节点
+        Web3j web3 = Web3j.build(new HttpService("https://ethereumclassic.network"));
+
+        // 发起 NFT 铸造的智能合约地址
+        String contractAddress = "0xNFT_CONTRACT_ADDRESS";
+
+        // 发起者的钱包私钥
+        Credentials credentials = Credentials.create("YOUR_PRIVATE_KEY");
+
+        // 铸造 NFT
+        YourNFTContract contract = YourNFTContract.load(contractAddress, web3, credentials, new DefaultGasProvider());
+        String tokenURI = "https://example.com/metadata";
+        BigInteger tokenId = BigInteger.valueOf(1); // NFT Token ID
+
+        // 铸造 NFT
+        contract.mintNFT("NFT_OWNER_ADDRESS", tokenId, tokenURI).send();
+    }
+}
